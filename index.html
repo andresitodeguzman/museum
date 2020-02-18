@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="theme-color" content="#6B120D">
+        <link rel="manifest" href="./manifest.json">
+        <script type="text/javascript">
+            if('serviceWorker' in navigator){
+                navigator.serviceWorker.register('/sw.js',{scope:'/'}).then(reg=>{
+                    console.log('SW Log: Registration was Successful');
+                }).catch(err=>{
+                    var error = err;
+                    console.log(`SW Log: [Error] ${error}`);
+                });
+            } else {
+                console.log(`SW Log: [Error] Feature Not Available on this Browser`);
+            }
+        </script>
+        <style>
+            body {
+                margin:0;
+                padding:0;
+                width: 100%;
+                height: 100%;
+                background-color: #ECECEC;
+            }
+            #label-container {
+                object-fit: fill;
+            }
+            #webcam-container {
+                box-sizing: border-box;
+                height: 100%;
+                overflow: hidden;
+                width: 100%;
+            }
+            video { height: 100%;}
+
+            .homenav {
+                width: 100%;
+                background-color: white;
+                box-shadow: 0px 4px 55px rgba(0, 0, 0, 0.25);
+            }
+            .homenav > div {
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+            .homenav > div > img {
+                display:block;
+                margin:auto;
+            }
+            .homeEntry {
+                margin:0;
+            }
+            .actionButton > img {
+                display:block;
+                margin:auto;
+            }
+            .actionButton {
+                position: fixed;
+                bottom: 10px;
+                width: 100%;
+            }
+
+            section {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <section id="home">
+            <nav class="homenav">
+                <div>
+                    <img src="assets/images/logo.png" width="80px">
+                </div>
+            </nav>
+            <div>
+                <img class="homeEntry" src="assets/images/Group 1.png" width="100%">
+                <img class="homeEntry" src="assets/images/Group 2.png" width="100%">
+            </div>
+            <div class="actionButton">
+                <img src="assets/images/button.png">
+            </div>
+        </section>
+        <section id="scan">
+            <nav class="homenav" style="display: flex; align-items: center;">
+                <div style="padding-left: 20px;">
+                    <div id="backHome">
+                        <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L4 10L12 18L10 20L0 10L10 0L12 2Z" fill="#6B120D"/>
+                        </svg>                        
+                    </div>
+                </div>
+                <div style="margin: auto;">
+                    <img src="assets/images/logo.png" width="80px">
+                </div>
+            </nav>
+            <div id="webcam-container">
+                <h2 style="text-align:center; margin-top: 60px; color: #6B120D;">
+                    Loading...
+                </h2>
+            </div>
+            <div id="emptyObject" style="display:none;">
+                <h2 style="text-align:center; margin-top: 60px; color: #6B120D;">
+                    Go near a painting<br>or a sculpture.
+                </h2>
+            </div>
+            <div class="cards" id="spoliarium" style="display: none; position: fixed; bottom: 20px;">
+                <img src="assets/images/spoliarium-card.svg" width="100%">
+                <img src="assets/images/learnmore.svg" width="100%"  onclick="$('section').hide(); $('#infoSpoliarium').fadeIn();">
+                <img src="assets/images/hideinfo.svg" width="100%" class="hideInfoButton">
+            </div>
+            <div class="cards" id="bust" style="display: none; position: fixed; bottom: 20px;">
+                <img src="assets/images/bust-card.svg" width="100%">
+                <img src="assets/images/learnmore.svg" width="100%">
+                <img src="assets/images/hideinfo.svg" width="100%" class="hideInfoButton">
+            </div>
+            <div class="cards" id="retablo" style="display: none; position: fixed; bottom: 20px;">
+                <img src="assets/images/retablo-card.svg" width="100%">
+                <img src="assets/images/learnmore.svg" width="100%">
+                <img src="assets/images/hideinfo.svg" width="100%" class="hideInfoButton">
+            </div>
+        </section>
+        
+        <section id="infoSpoliarium">
+            <nav class="homenav" style="display: flex; align-items: center;">
+                <div style="padding-left: 20px;">
+                    <div id="backHome">
+                        <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L4 10L12 18L10 20L0 10L10 0L12 2Z" fill="#6B120D"/>
+                        </svg>                        
+                    </div>
+                </div>
+                <div style="margin: auto;">
+                    <img src="assets/images/logo.png" width="80px">
+                </div>
+            </nav>
+
+            <img src="assets/images/spoliarium-preview.png" width="100%">
+            <img src="assets/images/spoliarium-card.svg" width="100%">
+            <iframe src="https://open.spotify.com/embed/track/0I5Z0p0cLWdyJNC6sqMTwD" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media" style="margin: 0 auto; padding-left: 5%;"></iframe>
+        </section>
+
+    </body>
+</html>
+<script src="./jquery.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script>
+    $(document).ready(()=>{
+        $('section').hide();
+        $('#home').fadeIn();
+    });
+
+    $('.actionButton').click(()=>{
+        init();
+        $('#home').fadeOut();
+        $('#scan').fadeIn();
+    });
+
+    $('#backHome').click(()=>{
+        window.location.reload();
+    });
+
+    $('.hideInfoButton').click(()=>{
+        $('.cards').hide();
+        window.shown = null;
+        window.shownPrev = null;
+    })
+</script>
+<script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "./my_model/";
+    window.shown;
+    window.shownPrev;
+
+    let model, webcam, labelContainer, maxPredictions;
+
+    // Load the image model and setup the webcam
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // or files from your local hard drive
+        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // Convenience function to setup a webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmImage.Webcam(window.innerWidth, 300); // width, height, flip
+        await webcam.setup({
+            facingMode: 'environment'
+        }); // request access to the webcam
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // append elements to the DOM
+        $("#webcam-container").html(webcam.canvas);
+        $("#emptyObject").fadeIn();
+    }
+
+    async function loop() {
+        webcam.update(); // update the webcam frame
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    // run the webcam image through the image model
+    async function predict() {
+        // predict can take in an image, video or canvas html element
+        let prediction = await model.predict(webcam.canvas);
+        prediction = prediction.map(o => { o.probability = o.probability.toFixed(2); return o; });
+        let closest = prediction.find(o => {
+            if(o.probability > 0.80) return o;
+        })
+        if(window.shown){
+            if(closest) {
+                if(closest.className !== window.shown['className']) {
+                    if(closest.className !== 'Person') {
+                        window.shown = closest;
+                        showResult();
+                    }
+                }
+            }
+        } else {
+            if(closest) {
+                if(closest.className !== 'Person') {
+                    window.shown = closest;
+                    showResult();
+                }
+            }
+        }
+
+        /*for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }*/
+    }
+
+    function showResult() {
+        if(!window.shownPrev) {
+            // display normal
+            $('.cards').hide();
+            if(window.shown.className == 'Spoliarium') {
+                $("#spoliarium").fadeIn();
+            }
+            if(window.shown.className == 'Bust of Ricardo Carnicero') {
+                $('#bust').fadeIn();
+            }
+            if(window.shown.className == 'Retablo') {
+                $('#retablo').fadeIn();
+            }
+            window.shownPrev = window.shown;
+        } else {
+                $('.cards').hide();
+                if(window.shownPrev.className !== window.shown.className) {
+                if(window.shown.className == 'Spoliarium') {
+                    $("#spoliarium").fadeIn();
+                }
+                if(window.shown.className == 'Bust of Ricardo Carnicero') {
+                    $('#bust').fadeIn();
+                }
+                if(window.shown.className == 'Retablo') {
+                    $('#retablo').fadeIn();
+                }
+                window.shownPrev = window.shown;
+            }
+        }
+    }
+</script>
