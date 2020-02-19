@@ -100,7 +100,7 @@
                 </h2>
             </div>
             <div id="emptyObject" style="display:none;">
-                <h2 style="text-align:center; margin-top: 60px; color: #6B120D;">
+                <h2 style="text-align:center; margin-top: 75px; color: #6B120D;">
                     Go near a painting<br>or a sculpture.
                 </h2>
             </div>
@@ -216,7 +216,7 @@
         let prediction = await model.predict(webcam.canvas);
         prediction = prediction.map(o => { o.probability = o.probability.toFixed(2); return o; });
         let closest = prediction.find(o => {
-            if(o.probability > 0.80) return o;
+            if(o.probability > 0.90) return o;
         })
         if(window.shown){
             if(closest) {
